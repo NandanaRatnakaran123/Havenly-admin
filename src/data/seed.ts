@@ -461,7 +461,7 @@ export const usersSeed: AdminUser[] = [
   {
     id: "1",
     name: "Site Admin",
-    email: "admin@havenly.local",
+    email: "admin@gmail.com",
     role: "admin",
     active: true,
     createdAt: "2026-08-01",
