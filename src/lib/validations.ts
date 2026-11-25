@@ -20,7 +20,18 @@ export const propertySchema = z.object({
   locality: z.string().trim().min(2, "Locality is required"),
   city: z.string().trim().min(1, "Select a city"),
   district: z.string().trim().optional(),
-  image: z.union([z.literal(""), z.string().trim().url("Enter a valid image URL")]).optional(),
+  /** Up to 3 photos (URL or uploaded data URL); empty slots are "". The first is the cover. */
+  images: z
+    .array(
+      z
+        .string()
+        .trim()
+        .refine(
+          (v) => v === "" || v.startsWith("data:image/") || URL.canParse(v),
+          "Enter a valid image URL",
+        ),
+    )
+    .max(3),
   furnishing: z
     .union([z.literal(""), z.enum(["furnished", "semi-furnished", "unfurnished"])])
     .optional(),
@@ -61,25 +72,10 @@ export const serviceSchema = z.object({
 
 export type ServiceFormValues = z.infer<typeof serviceSchema>;
 
-export const guideSchema = z.object({
-  title: z.string().trim().min(5, "Title is required"),
-  slug: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and dashes only"),
-  excerpt: z.string().trim().min(10, "Add a short excerpt"),
-  category: z.string().trim().min(2, "Category is required"),
-  readMins: num("read time").int().min(1).max(60),
-  body: z.string().trim().min(20, "Write the guide body"),
-  status: z.enum(["draft", "published"]),
-});
-
-export type GuideFormValues = z.infer<typeof guideSchema>;
-
 export const userSchema = z.object({
   name: z.string().trim().min(2, "Name is required"),
   email: z.string().trim().email("Enter a valid email"),
-  role: z.enum(["admin", "editor", "viewer"]),
+  role: z.enum(["admin", "staff", "agent", "buyer"]),
   active: z.boolean(),
 });
 

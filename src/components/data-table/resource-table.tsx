@@ -13,7 +13,7 @@ import { Input, Select } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { queryKeys } from "@/lib/query-keys";
 import type { ListParams, Resource } from "@/lib/resource";
-import { titleCase } from "@/lib/utils";
+import { cn, titleCase } from "@/lib/utils";
 
 interface ResourceTableProps<T extends { id: string }> {
   /** react-query key prefix, e.g. "properties" */
@@ -23,6 +23,8 @@ interface ResourceTableProps<T extends { id: string }> {
   searchPlaceholder?: string;
   /** Values for the status filter dropdown. Omit to hide it. */
   statusOptions?: string[];
+  /** Tabs above the table that filter on one URL param (e.g. ?role=). First tab (empty value) = all. */
+  tabs?: { param: "role" | "iAm"; items: { value: string; label: string }[] };
   emptyTitle: string;
   pageSize?: number;
 }
@@ -37,6 +39,7 @@ export function ResourceTable<T extends { id: string }>({
   columns,
   searchPlaceholder = "Search...",
   statusOptions,
+  tabs,
   emptyTitle,
   pageSize = 10,
 }: ResourceTableProps<T>) {
@@ -49,6 +52,7 @@ export function ResourceTable<T extends { id: string }>({
     pageSize,
     search: searchParams.get("q") ?? "",
     status: searchParams.get("status") ?? "",
+    ...(tabs ? { [tabs.param]: searchParams.get(tabs.param) ?? "" } : {}),
     sort: searchParams.get("sort") ?? undefined,
     order: searchParams.get("order") === "desc" ? "desc" : "asc",
   };
@@ -89,6 +93,34 @@ export function ResourceTable<T extends { id: string }>({
 
   return (
     <Card>
+      {tabs && (
+        <div
+          role="tablist"
+          aria-label="Filter by audience"
+          className="flex gap-1 overflow-x-auto border-b border-slate-200 px-4 pt-3 dark:border-slate-800"
+        >
+          {tabs.items.map((tab) => {
+            const selected = (params[tabs.param] ?? "") === tab.value;
+            return (
+              <button
+                key={tab.value || "all"}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => updateUrl({ [tabs.param]: tab.value || undefined })}
+                className={cn(
+                  "-mb-px border-b-2 px-4 py-2 text-sm font-medium whitespace-nowrap",
+                  selected
+                    ? "border-emerald-600 text-emerald-700 dark:text-emerald-400"
+                    : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-100",
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4 dark:border-slate-800">
         <div className="relative min-w-52 flex-1">
           <Search

@@ -19,6 +19,10 @@ export interface RowAction {
   hideWhenStatus?: string;
   /** Extra work after the patch succeeds (e.g. create a property from an approved submission). */
   after?: () => Promise<unknown>;
+  /** Replaces the default patch-on-click (e.g. open a payment dialog first). */
+  onClick?: () => void;
+  /** Ask for confirmation first, showing this text. */
+  confirm?: string;
 }
 
 interface RowActionsProps<T extends { id: string }> {
@@ -43,6 +47,7 @@ export function RowActions<T extends { id: string }>({
 }: RowActionsProps<T>) {
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<RowAction | null>(null);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.all(resourceKey) });
 
@@ -88,7 +93,11 @@ export function RowActions<T extends { id: string }>({
             title={action.label}
             aria-label={action.label}
             disabled={update.isPending}
-            onClick={() => update.mutate({ patch: action.patch, after: action.after })}
+            onClick={() =>
+              action.onClick
+                ? action.onClick()
+                : update.mutate({ patch: action.patch, after: action.after })
+            }
           >
             <action.icon className="h-4 w-4" />
           </Button>
@@ -115,6 +124,21 @@ export function RowActions<T extends { id: string }>({
           <Trash2 className="h-4 w-4" />
         </Button>
       )}
+      <ConfirmDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => !open && setPendingAction(null)}
+        title={pendingAction?.label ?? ""}
+        description={pendingAction?.confirm ?? ""}
+        confirmLabel={pendingAction?.label}
+        pending={update.isPending}
+        onConfirm={() => {
+          if (!pendingAction) return;
+          update.mutate(
+            { patch: pendingAction.patch, after: pendingAction.after },
+            { onSettled: () => setPendingAction(null) },
+          );
+        }}
+      />
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

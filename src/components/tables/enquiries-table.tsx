@@ -92,6 +92,15 @@ export function EnquiriesTable() {
       resourceKey="enquiries"
       resource={enquiriesApi}
       columns={columns}
+      tabs={{
+        param: "iAm",
+        items: [
+          { value: "", label: "All" },
+          { value: "agent", label: "Agents" },
+          { value: "buyer", label: "Buyers" },
+          { value: "general", label: "General" },
+        ],
+      }}
       searchPlaceholder="Search name, email, phone, message..."
       statusOptions={["new", "contacted", "closed"]}
       emptyTitle="No enquiries"

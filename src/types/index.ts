@@ -5,7 +5,8 @@ export type PosterRole = "owner" | "agent" | "builder";
 export type PublishStatus = "draft" | "published";
 export type ReviewStatus = "pending" | "approved" | "rejected";
 export type InboxStatus = "new" | "contacted" | "closed";
-export type UserRole = "admin" | "editor" | "viewer";
+/** admin: full access. staff: manages content. agent, buyer: read-only. */
+export type UserRole = "admin" | "staff" | "agent" | "buyer";
 
 /** Mirrors the public site's Property model, plus admin-only fields (status, createdAt). */
 export interface Property {
@@ -23,7 +24,10 @@ export interface Property {
   locality: string;
   city: string;
   district?: string;
+  /** Cover photo. */
   image?: string;
+  /** Extra photos (admin only; the public site model has a single `image`). */
+  gallery?: string[];
   furnishing?: Furnishing;
   /** e.g. "Ready to move", "Under construction", "Dec 2027" */
   possession: string;
@@ -98,20 +102,6 @@ export interface Service {
   createdAt: string;
 }
 
-/** A "Property guide" on /blog. */
-export interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  /** e.g. Buying guide, Finance, NRI guide, Legal */
-  category: string;
-  readMins: number;
-  body: string;
-  status: PublishStatus;
-  createdAt: string;
-}
-
 export interface AdminUser {
   id: string;
   name: string;
@@ -126,4 +116,25 @@ export interface SiteSettings {
   supportEmail: string;
   supportPhone: string;
   whatsappNumber: string;
+}
+
+export type PaymentStatus = "paid" | "pending" | "failed" | "refunded";
+export type PaymentMethod = "upi" | "card" | "netbanking" | "cash";
+
+/** A fee paid to Havenly (featured listing, service booking, ...). */
+export interface Payment {
+  id: string;
+  /** Receipt number, e.g. "PAY-2001". */
+  reference: string;
+  payerName: string;
+  payerEmail: string;
+  /** What the payment is for, e.g. "Featured listing", "Legal service". */
+  purpose: string;
+  /** Property this payment relates to (featured-listing fees). */
+  propertyId?: string;
+  /** INR. */
+  amount: number;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  createdAt: string;
 }

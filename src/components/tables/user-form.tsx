@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -9,11 +9,25 @@ import { FormField } from "@/components/shared/form-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { queryKeys } from "@/lib/query-keys";
 import { usersApi } from "@/lib/resources";
 import { userSchema, type UserFormValues } from "@/lib/validations";
+import type { AdminUser } from "@/types";
 
-export function UserForm() {
+/** Add a user, or edit one when an id is given. */
+export function UserForm({ id }: { id?: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.detail("users", id ?? ""),
+    queryFn: () => usersApi.get(id!),
+    enabled: Boolean(id),
+  });
+  if (id && isLoading) return <Skeleton className="h-48 w-full" />;
+  if (id && !data) return <p className="text-sm text-red-600">Could not load this user.</p>;
+  return <UserFormInner existing={data} />;
+}
+
+function UserFormInner({ existing }: { existing?: AdminUser }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const {
@@ -22,14 +36,21 @@ export function UserForm() {
     formState: { errors },
   } = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
-    defaultValues: { name: "", email: "", role: "editor", active: true },
+    defaultValues: {
+      name: existing?.name ?? "",
+      email: existing?.email ?? "",
+      role: existing?.role ?? "staff",
+      active: existing?.active ?? true,
+    },
   });
 
   const save = useMutation({
     mutationFn: (v: UserFormValues) =>
-      usersApi.create({ ...v, createdAt: new Date().toISOString().slice(0, 10) }),
+      existing
+        ? usersApi.update(existing.id, v)
+        : usersApi.create({ ...v, createdAt: new Date().toISOString().slice(0, 10) }),
     onSuccess: () => {
-      toast.success("User added");
+      toast.success(existing ? "User updated" : "User added");
       void queryClient.invalidateQueries({ queryKey: queryKeys.all("users") });
       router.push("/users");
     },
@@ -49,8 +70,9 @@ export function UserForm() {
           <FormField label="Role" htmlFor="role" error={errors.role?.message}>
             <Select id="role" {...register("role")}>
               <option value="admin">Admin</option>
-              <option value="editor">Editor</option>
-              <option value="viewer">Viewer</option>
+              <option value="staff">Staff</option>
+              <option value="agent">Agent</option>
+              <option value="buyer">Buyer</option>
             </Select>
           </FormField>
           <label className="flex items-end gap-2 pb-2 text-sm">

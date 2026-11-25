@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import { ImageField } from "@/components/shared/image-field";
 import { FormField } from "@/components/shared/form-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,7 @@ const emptyValues: PropertyFormValues = {
   locality: "",
   city: "",
   district: "",
-  image: "",
+  images: ["", "", ""],
   furnishing: "",
   possession: "Ready to move",
   amenities: [],
@@ -56,7 +57,7 @@ function toFormValues(p: Property): PropertyFormValues {
     ...emptyValues,
     ...p,
     district: p.district ?? "",
-    image: p.image ?? "",
+    images: [p.image ?? "", p.gallery?.[0] ?? "", p.gallery?.[1] ?? ""],
     furnishing: p.furnishing ?? "",
   };
 }
@@ -99,10 +100,13 @@ function PropertyFormInner({ existing }: { existing?: Property }) {
 
   const save = useMutation({
     mutationFn: (values: PropertyFormValues) => {
+      const { images, ...rest } = values;
+      const photos = images.filter(Boolean);
       const payload = {
-        ...values,
+        ...rest,
         district: values.district || undefined,
-        image: values.image || undefined,
+        image: photos[0],
+        gallery: photos.length > 1 ? photos.slice(1) : undefined,
         furnishing: values.furnishing || undefined,
       };
       return existing
@@ -272,14 +276,32 @@ function PropertyFormInner({ existing }: { existing?: Property }) {
               ))}
             </Select>
           </FormField>
-          <FormField
-            label="Image URL"
-            htmlFor="image"
-            error={err("image")}
-            hint="Leave empty to use the category picture."
-          >
-            <Input id="image" type="url" placeholder="https://..." {...register("image")} />
-          </FormField>
+          <div className="space-y-4 sm:col-span-2">
+            <p className="text-sm font-medium">Photos</p>
+            <p className="text-xs text-slate-500">
+              Add up to 3. The first is the cover picture. Leave empty to use the category picture.
+            </p>
+            {[0, 1, 2].map((i) => (
+              <FormField
+                key={i}
+                label={i === 0 ? "Photo 1 (cover)" : `Photo ${i + 1}`}
+                htmlFor={`image-${i}`}
+                error={errors.images?.[i]?.message}
+              >
+                <Controller
+                  control={control}
+                  name={`images.${i}` as const}
+                  render={({ field }) => (
+                    <ImageField
+                      id={`image-${i}`}
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </FormField>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

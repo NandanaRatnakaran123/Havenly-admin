@@ -81,3 +81,6 @@ export const amenityOptions = [
 export const serviceSlugs = ["legal", "registration", "building"] as const;
 
 export const guideCategories = ["Buying guide", "Finance", "NRI guide", "Legal"];
+
+/** Fee (INR) charged when a property is marked featured. */
+export const FEATURED_LISTING_FEE = 2999;

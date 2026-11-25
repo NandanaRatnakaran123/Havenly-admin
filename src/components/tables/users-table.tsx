@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { UserCheck, UserX } from "lucide-react";
+import { Ban, UserCheck } from "lucide-react";
 import { ResourceTable } from "@/components/data-table/resource-table";
 import { RowActions } from "@/components/data-table/row-actions";
 import { StatusBadge } from "@/components/ui/badge";
@@ -27,8 +27,8 @@ const columns: ColumnDef<AdminUser, unknown>[] = [
   },
   {
     accessorKey: "active",
-    header: "Access",
-    cell: ({ row }) => <StatusBadge value={row.original.active ? "active" : "inactive"} />,
+    header: "Status",
+    cell: ({ row }) => <StatusBadge value={row.original.active ? "active" : "blocked"} />,
   },
   {
     accessorKey: "createdAt",
@@ -47,10 +47,18 @@ const columns: ColumnDef<AdminUser, unknown>[] = [
         resource={usersApi}
         row={row.original}
         entity="user"
+        editHref={`/users/${row.original.id}/edit`}
         actions={
           row.original.active
-            ? [{ label: "Deactivate", icon: UserX, patch: { active: false } }]
-            : [{ label: "Activate", icon: UserCheck, patch: { active: true } }]
+            ? [
+                {
+                  label: "Block user",
+                  icon: Ban,
+                  patch: { active: false },
+                  confirm: `${row.original.name} will no longer be able to sign in to the admin panel.`,
+                },
+              ]
+            : [{ label: "Unblock user", icon: UserCheck, patch: { active: true } }]
         }
       />
     ),
@@ -63,6 +71,16 @@ export function UsersTable() {
       resourceKey="users"
       resource={usersApi}
       columns={columns}
+      tabs={{
+        param: "role",
+        items: [
+          { value: "", label: "All" },
+          { value: "admin", label: "Admins" },
+          { value: "staff", label: "Staff" },
+          { value: "agent", label: "Agents" },
+          { value: "buyer", label: "Buyers" },
+        ],
+      }}
       searchPlaceholder="Search name, email, role..."
       emptyTitle="No users"
     />

@@ -34,7 +34,7 @@ async function backendLogin(email: string, password: string): Promise<Session | 
     if (!res.ok) return null;
     const body = (await res.json()) as { token?: string; role?: string };
     if (!body.token) return null;
-    return { token: body.token, role: isUserRole(body.role) ? body.role : "viewer" };
+    return { token: body.token, role: isUserRole(body.role) ? body.role : "buyer" };
   } catch {
     return null; // backend unreachable
   }
@@ -48,7 +48,7 @@ function devLogin(email: string, password: string): Session | null {
     {
       email: process.env.STAFF_DEV_EMAIL,
       password: process.env.STAFF_DEV_PASSWORD,
-      role: "editor",
+      role: "staff",
     },
   ];
   const match = accounts.find(

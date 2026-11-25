@@ -1,5 +1,5 @@
 import {
-  blogSeed,
+  paymentsSeed,
   enquiriesSeed,
   propertiesSeed,
   requirementsSeed,
@@ -10,8 +10,8 @@ import {
 import { createResource } from "@/lib/resource";
 import type {
   AdminUser,
-  BlogPost,
   Enquiry,
+  Payment,
   Property,
   Requirement,
   Service,
@@ -51,5 +51,10 @@ export const servicesApi = createResource<Service>("/services", servicesSeed, [
   "summary",
   "slug",
 ]);
-export const blogApi = createResource<BlogPost>("/blog", blogSeed, ["title", "category", "slug"]);
 export const usersApi = createResource<AdminUser>("/users", usersSeed, ["name", "email", "role"]);
+export const paymentsApi = createResource<Payment>("/payments", paymentsSeed, [
+  "reference",
+  "payerName",
+  "payerEmail",
+  "purpose",
+]);

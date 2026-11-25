@@ -1,8 +1,8 @@
 import {
-  BookOpen,
   Building2,
   ClipboardList,
-  Inbox,
+  CreditCard,
+  Crown,
   LayoutDashboard,
   MessageSquare,
   Settings,
@@ -24,7 +24,6 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { label: "Overview", href: "/", icon: LayoutDashboard, roles: sectionRoles["/"] },
   { label: "Properties", href: "/properties", icon: Building2, roles: sectionRoles["/properties"] },
-  { label: "Submissions", href: "/submissions", icon: Inbox, roles: sectionRoles["/submissions"] },
   {
     label: "Requirements",
     href: "/requirements",
@@ -38,7 +37,8 @@ export const navItems: NavItem[] = [
     roles: sectionRoles["/enquiries"],
   },
   { label: "Services", href: "/services", icon: Wrench, roles: sectionRoles["/services"] },
-  { label: "Blog", href: "/blog", icon: BookOpen, roles: sectionRoles["/blog"] },
+  { label: "Plans", href: "/plans", icon: Crown, roles: sectionRoles["/plans"] },
+  { label: "Payments", href: "/payments", icon: CreditCard, roles: sectionRoles["/payments"] },
   { label: "Users", href: "/users", icon: Users, roles: sectionRoles["/users"] },
   { label: "Settings", href: "/settings", icon: Settings, roles: sectionRoles["/settings"] },
 ];

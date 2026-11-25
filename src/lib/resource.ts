@@ -7,6 +7,10 @@ export interface ListParams {
   pageSize?: number;
   search?: string;
   status?: string;
+  /** Filters rows by their `role` field (e.g. user role tabs). */
+  role?: string;
+  /** Enquiry audience: "buyer", "agent" or "general" (no choice made). */
+  iAm?: string;
   sort?: string;
   order?: "asc" | "desc";
 }
@@ -44,11 +48,20 @@ export function applyListParams<T extends { id: string }>(
   params: ListParams,
   searchKeys: (keyof T)[],
 ): ListResult<T> {
-  const { page = 1, pageSize = 10, search, status, sort, order = "asc" } = params;
+  const { page = 1, pageSize = 10, search, status, role, iAm, sort, order = "asc" } = params;
   let result = rows;
 
   if (status) {
     result = result.filter((r) => (r as Record<string, unknown>).status === status);
+  }
+  if (role) {
+    result = result.filter((r) => (r as Record<string, unknown>).role === role);
+  }
+  if (iAm) {
+    result = result.filter((r) => {
+      const value = (r as Record<string, unknown>).iAm;
+      return iAm === "general" ? !value : value === iAm;
+    });
   }
   if (search) {
     const q = search.toLowerCase();

@@ -58,12 +58,11 @@ src/
 │   ├── (auth)/login/page.tsx
 │   └── (dashboard)/                 # AppShell: sidebar + topbar
 │       ├── page.tsx                 # overview: counts, listings by type, pending review
-│       ├── properties/              # list, new/, [id]/edit/
-│       ├── submissions/             # visitor-posted properties: approve (creates draft) / reject
+│       ├── properties/              # tabs: Properties (list, new/, [id]/edit/) and Submissions
+│       ├── submissions/             # redirects to /properties?tab=submissions (visitor posts: approve creates draft / reject)
 │       ├── requirements/            # "Post your requirement" leads
 │       ├── enquiries/               # contact, property, service enquiries, loan call-backs
 │       ├── services/                # list, new/, [id]/edit/
-│       ├── blog/                    # property guides: list, new/, [id]/edit/
 │       ├── users/  settings/
 ├── components/
 │   ├── ui/  shared/  layout/  auth/
@@ -87,7 +86,7 @@ Path alias: `@/*` → `src/*`.
 
 `Property`: title, description, price (sale total or monthly rent), type `sale|rent`, category `apartment|villa|house|plot|commercial`, bedrooms, bathrooms, areaSqft, address, locality, city (10 cities in `config/options.ts`), optional Kerala district, image URL, furnishing, possession, amenities[], advertiser name and role (`owner|agent|builder`), `featured`, `verified` ("Verified by Havenly"), `status` `draft|published`, `createdAt`. The public Property ID is derived: `propertyRef(id)` → `HVN1000 + id`.
 
-Other collections: `Submission` (from /post-property), `Requirement` (from /post-requirement), `Enquiry` (contact / property / service / loan call-back), `Service` (legal, registration, building plan), `BlogPost` (a "property guide"), `AdminUser`, `SiteSettings` (support contacts, WhatsApp number).
+Other collections: `Submission` (from /post-property), `Requirement` (from /post-requirement), `Enquiry` (contact / property / service / loan call-back), `Service` (legal, registration, building plan), `AdminUser`, `SiteSettings` (support contacts, WhatsApp number).
 
 ## Data layer
 
@@ -103,7 +102,7 @@ To add a resource: type in `types/`, seed + `createResource` in `lib/resources.t
 
 - Login posts to the backend `/auth/login`. In non-production, if the backend is unreachable, `ADMIN_DEV_EMAIL` / `ADMIN_DEV_PASSWORD` from `.env.local` work (see `.env.example`). The token is stored in an `httpOnly` cookie (`AUTH_COOKIE_NAME`). Never use `localStorage` for tokens.
 - `proxy.ts` is only an optimistic gate. The backend must enforce permissions on every call.
-- Roles `admin | editor | viewer` filter the sidebar via `config/nav.ts`. The role currently defaults to `admin` in `store/ui.ts`; set it from a `/me` call once the backend exists. Hiding nav items is not security.
+- Roles `admin | staff | agent | buyer` (agent and buyer are read-only) filter the sidebar via `config/nav.ts`. The role currently defaults to `admin` in `store/ui.ts`; set it from a `/me` call once the backend exists. Hiding nav items is not security.
 
 ## Conventions
 

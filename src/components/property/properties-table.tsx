@@ -2,6 +2,8 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { BadgeCheck, Eye, EyeOff, Star } from "lucide-react";
+import { useState } from "react";
+import { FeaturedPaymentDialog } from "@/components/property/featured-payment-dialog";
 import { ResourceTable } from "@/components/data-table/resource-table";
 import { RowActions } from "@/components/data-table/row-actions";
 import { Badge, StatusBadge } from "@/components/ui/badge";
@@ -9,6 +11,43 @@ import { categoryLabels, posterRoleLabels } from "@/config/options";
 import { propertiesApi } from "@/lib/resources";
 import { formatArea, formatDate, formatPrice, propertyRef } from "@/lib/utils";
 import type { Property } from "@/types";
+
+function PropertyRowActions({ property }: { property: Property }) {
+  const [payOpen, setPayOpen] = useState(false);
+  return (
+    <>
+      <RowActions
+        resourceKey="properties"
+        resource={propertiesApi}
+        row={property}
+        entity="property"
+        editHref={`/properties/${property.id}/edit`}
+        actions={[
+          {
+            label: "Publish",
+            icon: Eye,
+            patch: { status: "published" },
+            hideWhenStatus: "published",
+          },
+          { label: "Unpublish", icon: EyeOff, patch: { status: "draft" }, hideWhenStatus: "draft" },
+          {
+            label: property.featured ? "Remove featured" : "Mark featured",
+            icon: Star,
+            patch: { featured: !property.featured },
+            onClick: property.featured ? undefined : () => setPayOpen(true),
+          },
+          {
+            label: property.verified ? "Remove verified" : "Mark verified",
+            icon: BadgeCheck,
+            patch: { verified: !property.verified },
+          },
+        ]}
+      />
+
+      <FeaturedPaymentDialog property={property} open={payOpen} onOpenChange={setPayOpen} />
+    </>
+  );
+}
 
 const columns: ColumnDef<Property, unknown>[] = [
   {
@@ -84,34 +123,7 @@ const columns: ColumnDef<Property, unknown>[] = [
     id: "actions",
     header: "",
     enableSorting: false,
-    cell: ({ row }) => (
-      <RowActions
-        resourceKey="properties"
-        resource={propertiesApi}
-        row={row.original}
-        entity="property"
-        editHref={`/properties/${row.original.id}/edit`}
-        actions={[
-          {
-            label: "Publish",
-            icon: Eye,
-            patch: { status: "published" },
-            hideWhenStatus: "published",
-          },
-          { label: "Unpublish", icon: EyeOff, patch: { status: "draft" }, hideWhenStatus: "draft" },
-          {
-            label: row.original.featured ? "Remove featured" : "Mark featured",
-            icon: Star,
-            patch: { featured: !row.original.featured },
-          },
-          {
-            label: row.original.verified ? "Remove verified" : "Mark verified",
-            icon: BadgeCheck,
-            patch: { verified: !row.original.verified },
-          },
-        ]}
-      />
-    ),
+    cell: ({ row }) => <PropertyRowActions property={row.original} />,
   },
 ];
 

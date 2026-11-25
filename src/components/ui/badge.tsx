@@ -19,10 +19,16 @@ const statusTone: Record<string, keyof typeof tones> = {
   contacted: "amber",
   rejected: "red",
   admin: "red",
-  editor: "blue",
-  viewer: "slate",
+
   active: "green",
   inactive: "slate",
+  blocked: "red",
+  staff: "green",
+  agent: "blue",
+  buyer: "amber",
+  paid: "green",
+  failed: "red",
+  refunded: "slate",
 };
 
 export function Badge({
